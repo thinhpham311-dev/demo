@@ -1,26 +1,16 @@
+/* eslint-disable array-callback-return */
 import React, { useState, useEffect } from 'react';
-import {useJsApiLoader} from '@react-google-maps/api';
 import PlacesAutocomplete, {geocodeByAddress,getLatLng} from 'react-places-autocomplete';
 import MapAPI from '../Components/MapAPI';
 import { v4 } from 'uuid';
 import  api  from '../api/CallApi';
-import InforLocation from '../Components/InforLocation';
-import Notification from '../Components/Notification';
+import InforMaker from '../Components/InforMaker';
 
-const Locations = () => {
+
+const Locations = (props) => {
   const [address, setAddress] = useState("");
   const [listlocation, setListlocation] = useState([]);
   const [listViewlocation, setListViewlocation] = useState({});
-  const [Notified, setNotified] = useState({
-    completed: false,
-    content: null
-  })
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: "AIzaSyAmlRtE1Ggrzz-iSUAWGIcm0mmi7GXbKtI",
-      libraries: ['places', 'drawing']
-  })
-
   useEffect(() => {
     api('locations', 'GET', null)
       .then(res =>
@@ -44,10 +34,10 @@ const Locations = () => {
     api('add/locations', 'POST', {
         address: result[0].formatted_address,
         lat: ll.lat,
-        lng: ll.lng
+        lng: ll.lng,
     })
     setListlocation(location)
-    setNotified(
+    props.setNotified(
       {
         completed: true,
         content: 'Thêm thành công'
@@ -61,7 +51,7 @@ const Locations = () => {
     }
     const deleteitems = listlocation.filter(todo => todo.id !== id);
     setListlocation(deleteitems);
-    setNotified(
+    props.setNotified(
       {
         completed: true,
         content: 'Xóa thành công'
@@ -82,8 +72,7 @@ const Locations = () => {
     })
   }
 
-
-  return isLoaded ? (
+  return props.isLoaded ? (
       <div className='container'>
         <div className='row'>
           <div className='col-3 py-5'>
@@ -118,7 +107,6 @@ const Locations = () => {
                             key={index}
                           >
                             <div  className='d-flex align-items-start justify-content-start py-2'>
-
                               <i className="bi bi-geo-alt px-3"></i><span>{suggestion.description}</span>
                             </div>
                           </div>
@@ -129,7 +117,8 @@ const Locations = () => {
                 )}
               </PlacesAutocomplete>
             <div className='mt-5'>
-              <InforLocation listViewlocation={listViewlocation}
+            <InforMaker listViewlocation={listViewlocation}
+
                />
             </div>
           </div>
@@ -137,10 +126,12 @@ const Locations = () => {
             <MapAPI listlocation={listlocation}
                     onHandleDelete={HandleDelete}
                     setListlocation={setListlocation}
-                    onDisplayInfo={DisplayInfo}/>
+                    onDisplayInfo={DisplayInfo}
+                    setNotified={props.setNotified}
+                    />
           </div>
       </div>
-      <Notification onNotified={Notified} setNotified={setNotified} />
+      
   </div>
     ) : (<></>);
 }

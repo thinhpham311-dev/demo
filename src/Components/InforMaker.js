@@ -1,11 +1,11 @@
 import React from 'react';
 
-const InforLocation = (props) => {
+const InforMaker = (props) => {
    
     return (
         <>
             <div>
-                <h2>Infomation location</h2>
+                <h2>Marker:</h2>
                 <p>Location address: {props.listViewlocation.address}</p>
                 <p>lat: {props.listViewlocation.lat}</p>
                 <p>lng: {props.listViewlocation.lng}</p>
@@ -14,4 +14,4 @@ const InforLocation = (props) => {
     );
 }
 
-export default InforLocation;
+export default InforMaker;

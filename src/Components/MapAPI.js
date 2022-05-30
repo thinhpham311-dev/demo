@@ -1,4 +1,5 @@
-import React, {memo, useRef, useState, useCallback, useEffect} from 'react';
+/* eslint-disable no-undef */
+import React, {memo, useRef, useState, useEffect} from 'react';
 import {
   GoogleMap,
   Marker, 
@@ -7,11 +8,11 @@ import {
   Polygon
 } from '@react-google-maps/api';
 import './style.css';
-import CallApi from '../api/CallApi';
+import api from '../api/CallApi';
+import { v4 } from 'uuid';
 
-
-
-  const containerStyle = {
+//Config Map 
+ const containerStyle = {
     width: '100%',
     height: 'calc(100vh - 40px)'
   };
@@ -21,64 +22,105 @@ import CallApi from '../api/CallApi';
     lng: 105.4185406
   };
 
-  const optionsPolygon = {
-  fillColor: "lightblue",
-  fillOpacity: 1,
-  strokeColor: "black",
-  strokeOpacity: 1,
-  strokeWeight: 2,
-  clickable: false,
-  draggable: false,
-  editable: false,
-  geodesic: false,
-  zIndex: 1
-}
-
   const MapAPI = (props) => {
   const [Coords, setCoords] = useState([]);
-    const MarkerRef = useRef();
-    
+    const PolygonRef = useRef();
   useEffect(() => {
-    CallApi('polygon', 'GET', null).then(res => 
-    {
-      setCoords(res.data)
-    }).catch(err => console.log(err))
-  }, []);
-
+    api('polygon', 'GET', null)
+      .then(res =>
+        setCoords(res.data))
+      .catch(error => console.log(error))
+  
+  }, [setCoords])
   const TogglePopupOpen = (id) => {
     const toggle = [...props.listlocation].map(todo => 
       todo.id === id ? {...todo, isOpen: !todo.isOpen} : todo)
       props.setListlocation(toggle)
   }
  
-  const CreatePolygon = useCallback((Polygon) => {
-    let path = Polygon.getPath();
+    const CreatePolygon = async (Polygon) => {
+    
+    let path = await Polygon.getPath();
     let polygonCoords = [];
-
+ 
     for (let i = 0; i < path.length; i++) {
       polygonCoords.push({
           lat: path.getAt(i).lat(),
           lng: path.getAt(i).lng(),
       });
     }
-    
-    setCoords(polygonCoords)
+    api('add/polygon', 'POST', {
+      name: 'point',
+      point: JSON.stringify(polygonCoords),
+    })
+      
+      window.google.maps.event.addListener(Polygon, 'click', function (event) {
+        debugger
+          if (Polygon.Contains(event.latLng)) {
+              alert(event.latLng + " Inside Polygon.");
+          } else {
+              alert(event.latLng + " Outside Polygon.");
+          }
+      });
+     setCoords([
+      ...Coords, 
+      {
+        id: v4(),
+        point: polygonCoords,
+      }
+     ])
+   
+    props.setNotified(
+      {
+        completed: true,
+        content: 'Thêm khu vực thành công'
+      }
+    )
+  }
 
-  }, [])
-  
-    console.log(Coords)
+  const handleDelete = (id) => {
+    if (id) {
+      api(`delete/polygon/${id}`, 'DELETE', null)
+    }
+    const deleteitems = Coords.filter(todo => todo.id !== id);
+    setCoords(deleteitems);
+    props.setNotified(
+      {
+        completed: true,
+        content: 'Xóa khu vuc thành công'
+      }
+    )
+    
+    }
+    
+   const checkMarker = (event) => {
+    var polygon = new google.maps.Polygon({ paths: center });
+    let result = (google.maps.geometry.poly.containsLocation(event.latLng, polygon) ? "YES" : "NO")
+     console.log(result)
+  }
+ 
   return  (
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={center}
       zoom={15}
+      onClick={checkMarker}
     >
-        <Polygon
-          paths={Coords}
-          options={optionsPolygon}/>
+        {
+          Coords.map(items=> 
+            <Polygon
+              onDblClick={() => handleDelete(items.id)}
+              onClick={checkMarker}
+              key={items.id}
+              // eslint-disable-next-line no-eval
+              paths={eval(items.point)}
+              ref={PolygonRef}/>
+          )
+        }
+       
         <DrawingManager
           setMap={GoogleMap}
-          onPolygonComplete={CreatePolygon}
+          onPolygonComplete={(e)=>CreatePolygon(e)}
           options={{
             drawingControl: true,
             drawingControlOptions: {
@@ -87,7 +129,8 @@ import CallApi from '../api/CallApi';
             // eslint-disable-next-line no-undef
             drawingModes: [google.maps.drawing.OverlayType.POLYGON]
           },
-          polygonOptions: { editable: true }
+            polygonOptions: { editable: true }
+          
         }}
         />
         {
@@ -96,7 +139,7 @@ import CallApi from '../api/CallApi';
                   key={items.id}
                   position={{ lat: items.lat, lng: items.lng }}
                   title={items.address}
-                  ref={MarkerRef}
+      
                   onClick={() => TogglePopupOpen(items.id)}>
                   {
                     items.isOpen && (
@@ -130,4 +173,3 @@ import CallApi from '../api/CallApi';
 }
 
 export default memo(MapAPI);
-
