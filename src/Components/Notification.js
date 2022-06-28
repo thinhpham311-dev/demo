@@ -1,8 +1,9 @@
 import React from 'react';
 
 const Notification = (props) => {
-    setTimeout(()=>props.setNotified({
+    setTimeout(() => props.setNotified({
         completed: false,
+        status: [],
         content: props.onNotified.content
     }), 10000)
     return (
@@ -10,7 +11,9 @@ const Notification = (props) => {
             <div className="show toast"
                 style={props.onNotified.completed ?
                     { 'opacity': '1', 'transition': 'all 0.5s' } :
-                    { 'opacity': '0', 'transition': 'all 0.5s' }}
+                    { 'opacity': '0', 'transition': 'all 0.5s', 'background': props.onNotified.status }
+                    
+                }
                 role="alert"
                 aria-live="assertive"
                 aria-atomic="true">

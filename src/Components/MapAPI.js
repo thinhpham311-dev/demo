@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
-import React, {memo, useRef, useState, useEffect} from 'react';
+
+import React, {memo, useRef, useState, useEffect, useCallback} from 'react';
 import {
   GoogleMap,
   Marker, 
@@ -9,7 +10,7 @@ import {
 } from '@react-google-maps/api';
 import './style.css';
 import api from '../api/CallApi';
-import { v4 } from 'uuid';
+
 
 //Config Map 
  const containerStyle = {
@@ -22,9 +23,9 @@ import { v4 } from 'uuid';
     lng: 105.4185406
   };
 
-  const MapAPI = (props) => {
+const MapAPI = (props) => {
   const [Coords, setCoords] = useState([]);
-    const PolygonRef = useRef();
+  const PolygonRef = useRef();
   useEffect(() => {
     api('polygon', 'GET', null)
       .then(res =>
@@ -33,84 +34,136 @@ import { v4 } from 'uuid';
   
   }, [setCoords])
   const TogglePopupOpen = (id) => {
-    const toggle = [...props.listlocation].map(todo => 
-      todo.id === id ? {...todo, isOpen: !todo.isOpen} : todo)
-      props.setListlocation(toggle)
+    const toggle = [...props.listlocation].map(todo =>
+      todo.id === id ? { ...todo, isOpen: !todo.isOpen } : todo)
+    props.setListlocation(toggle)
   }
- 
-    const CreatePolygon = async (Polygon) => {
-    
-    let path = await Polygon.getPath();
-    let polygonCoords = [];
- 
-    for (let i = 0; i < path.length; i++) {
-      polygonCoords.push({
-          lat: path.getAt(i).lat(),
-          lng: path.getAt(i).lng(),
-      });
-    }
-    api('add/polygon', 'POST', {
-      name: 'point',
-      point: JSON.stringify(polygonCoords),
-    })
-      
-      window.google.maps.event.addListener(Polygon, 'click', function (event) {
-        debugger
-          if (Polygon.Contains(event.latLng)) {
-              alert(event.latLng + " Inside Polygon.");
-          } else {
-              alert(event.latLng + " Outside Polygon.");
-          }
-      });
-     setCoords([
-      ...Coords, 
-      {
-        id: v4(),
-        point: polygonCoords,
+  google.maps.Polygon.prototype.Contains = function (point) {
+    var crossings = 0,
+      path = this.getPath();
+        
+    // for each edge
+    for (var i = 0; i < path.getLength(); i++) {
+      var a = path.getAt(i),
+        j = i + 1;
+      if (j >= path.getLength()) {
+        j = 0;
       }
-     ])
-   
-    props.setNotified(
-      {
+      var b = path.getAt(j);
+      if (rayCrossesSegment(point, a, b)) {
+        crossings++;
+      }
+    }
+    
+    // odd number of crossings?
+    return (crossings % 2 === 1);
+
+    function rayCrossesSegment(point, a, b) {
+      var px = point.lng(),
+        py = point.lat(),
+        ax = a.lng(),
+        ay = a.lat(),
+        bx = b.lng(),
+        by = b.lat();
+      if (ay > by) {
+        ax = b.lng();
+        ay = b.lat();
+        bx = a.lng();
+        by = a.lat();
+      }
+      // alter longitude to cater for 180 degree crossings
+      if (px < 0) {
+        px += 360;
+      }
+      if (ax < 0) {
+        ax += 360;
+      }
+      if (bx < 0) {
+        bx += 360;
+      }
+
+      if (py === ay || py === by) py += 0.00000001;
+      if ((py > by || py < ay) || (px > Math.max(ax, bx))) return false;
+      if (px < Math.min(ax, bx)) return true;
+
+      var red = (ax !== bx) ? ((by - ay) / (bx - ax)) : Infinity;
+      var blue = (ax !== px) ? ((py - ay) / (px - ax)) : Infinity;
+      return (blue >= red);
+
+    }
+    
+  }
+  const CreatePolygon = useCallback((Polygon) => {
+      let path =  Polygon.getPath();
+      let polygonCoords = [];
+  
+      for (let i = 0; i < path.length; i++) {
+        polygonCoords.push({
+            lat: path.getAt(i).lat(),
+            lng: path.getAt(i).lng(),
+        });
+    }
+    var check = false;
+    props.listlocation.map((items, index) => {
+      var marker = new google.maps.Marker({
+        position: {
+          lat: items.lat,
+          lng: items.lng
+        },
+      });
+      if (Polygon.Contains(marker.getPosition())) {
+        check = true;
+          return check;
+        }
+    });
+
+    if (check) {
+      api('add/polygon', 'POST', {
+        name: 'point',
+        point: JSON.stringify(polygonCoords),
+      });
+      props.setNotified({
         completed: true,
         content: 'Thêm khu vực thành công'
-      }
-    )
-  }
-
-  const handleDelete = (id) => {
-    if (id) {
-      api(`delete/polygon/${id}`, 'DELETE', null)
+      })
+      return;
+    } else {
+      props.setNotified({
+          completed: true,
+          content: 'Khu vực này không có location'
+        })
+      Polygon.setMap(null)
+      return;
     }
-    const deleteitems = Coords.filter(todo => todo.id !== id);
-    setCoords(deleteitems);
-    props.setNotified(
+    
+  }, [props])
+ 
+  const handleDelete = (id) => {
+      if (id) {
+        api(`delete/polygon/${id}`, 'DELETE', null)
+      }
+      const deleteitems = Coords.filter(todo => todo.id !== id);
+      setCoords(deleteitems);
+      props.setNotified(
       {
         completed: true,
         content: 'Xóa khu vuc thành công'
       }
     )
     
-    }
-    
-   const checkMarker = (event) => {
-    var polygon = new google.maps.Polygon({ paths: center });
-    let result = (google.maps.geometry.poly.containsLocation(event.latLng, polygon) ? "YES" : "NO")
-     console.log(result)
   }
+
  
   return  (
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={center}
       zoom={15}
-      onClick={checkMarker}
     >
         {
           Coords.map(items=> 
             <Polygon
               onDblClick={() => handleDelete(items.id)}
-              onClick={checkMarker}
               key={items.id}
               // eslint-disable-next-line no-eval
               paths={eval(items.point)}
@@ -120,7 +173,7 @@ import { v4 } from 'uuid';
        
         <DrawingManager
           setMap={GoogleMap}
-          onPolygonComplete={(e)=>CreatePolygon(e)}
+           onPolygonComplete={(e)=>CreatePolygon(e)}
           options={{
             drawingControl: true,
             drawingControlOptions: {
