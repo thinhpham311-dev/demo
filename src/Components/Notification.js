@@ -1,16 +1,18 @@
 import React from 'react';
 
 const Notification = (props) => {
-    setTimeout(()=>props.setNotified({
+    setTimeout(() => props.setNotified({
         completed: false,
-        content: props.onNotified.content
+        content: props.onNotified.content,
+        style: null
     }), 10000)
     return (
-        <div className='position-fixed bottom-0 right-0'>
+        <div className='bottom-0 right-0' style={props.onNotified.style}>
             <div className="show toast"
                 style={props.onNotified.completed ?
                     { 'opacity': '1', 'transition': 'all 0.5s' } :
-                    { 'opacity': '0', 'transition': 'all 0.5s' }}
+                    { 'opacity': '0', 'transition': 'all 0.5s', 'background': props.onNotified.status }
+                }
                 role="alert"
                 aria-live="assertive"
                 aria-atomic="true">

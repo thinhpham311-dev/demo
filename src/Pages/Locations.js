@@ -12,10 +12,12 @@ const Locations = (props) => {
   const [listlocation, setListlocation] = useState([]);
   const [listViewlocation, setListViewlocation] = useState({});
   useEffect(() => {
-    api('locations', 'GET', null)
-      .then(res =>
-        setListlocation(res.data))
-      .catch(error => console.log(error))
+    
+      api('locations', 'GET', null)
+        .then(res =>
+          setListlocation(res.data))
+        .catch(error => console.log(error))
+    
    
   }, [setListlocation])
   
@@ -40,10 +42,12 @@ const Locations = (props) => {
     props.setNotified(
       {
         completed: true,
-        content: 'Thêm thành công'
+        content: 'Thêm thành công',
+        style: {'position':'fixed', 'bottom': 0, 'background': 'green', 'color': 'white'}
       }
     )
   }
+
 
   const HandleDelete = (id) => {
     if (id) {
@@ -54,7 +58,8 @@ const Locations = (props) => {
     props.setNotified(
       {
         completed: true,
-        content: 'Xóa thành công'
+        content: 'Xóa thành công',
+        style:null
       }
     )
   }
@@ -117,9 +122,7 @@ const Locations = (props) => {
                 )}
               </PlacesAutocomplete>
             <div className='mt-5'>
-            <InforMaker listViewlocation={listViewlocation}
-
-               />
+            <InforMaker listViewlocation={listViewlocation}/>
             </div>
           </div>
           <div className='col-9'>

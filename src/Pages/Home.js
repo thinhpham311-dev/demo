@@ -36,7 +36,7 @@ const Home = (props) => {
   const PolygonRef = useRef();
   const checkMarker = (event) => {
     var polygon = new google.maps.Polygon({ paths: poly });
-    let result = (google.maps.geometry.poly.containsLocation(event.latLng, polygon) ? "YES" : "NO")
+    let result = google.maps.geometry.poly.containsLocation(event.latLng, polygon)
      console.log(result)
   }
   

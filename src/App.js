@@ -2,33 +2,61 @@
 
 import './App.css';
 
-import { Routes, Route } from "react-router-dom";
+import { Routes } from "react-router-dom";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Header from './Components/Header';
-import Home from './Pages/Home';
+import Authmiddleware from './route/route';
+import { publicRoute, protectedRoute, isLoaded } from './route';
 import React, {useState} from 'react';
-import Locations from './Pages/Locations';
 import Notification from './Components/Notification';
-import {useJsApiLoader} from '@react-google-maps/api';
+import { useJsApiLoader } from '@react-google-maps/api';
 
 
-function App() {
+
+
+
+
+function App(props) {
+
   const [Notified, setNotified] = useState({
     completed: false,
-    content: null
+    content: null,
+    style: null
   })
- const { isLoaded } = useJsApiLoader({
+  const { isLoaded }  = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: 'AIzaSyAmlRtE1Ggrzz-iSUAWGIcm0mmi7GXbKtI',
       libraries: ['places', 'drawing', 'geometry']
   })
+
   return (
     <div className='App'>
       <Header/>
-        <Routes>
-          <Route path="/" exact element={<Home isLoaded={isLoaded} />}/>
-          <Route path="/locations" element={<Locations isLoaded={isLoaded} setNotified={setNotified} Notified={Notified}/>} />
+      <Routes>
+        {
+          protectedRoute.map((route, index) => 
+            <Authmiddleware
+                path={route.path}
+                element={`<${route.component}/>`}
+                isLoaded= {isLoaded}
+                key={index}
+                isAuthProtected={true}
+                exact
+            />
+            )
+        }
+        {
+          publicRoute.map((route, index) => {
+            <Authmiddleware
+                path={route.path}
+                element={route.component}
+                key={index}
+                isAuthProtected={false}
+                exact
+            />
+          })
+        }
         </Routes>
       <Notification setNotified={setNotified} onNotified={Notified}/>
     </div>
