@@ -1,28 +1,21 @@
-import React, { useState } from 'react';
 import {
-  Row,
-  Col,
-  CardBody,
-  Card,
-  Alert,
-  Container,
   Form,
   Input,
   FormFeedback,
-  Label,
 } from "reactstrap"
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
  import * as Yup from "yup"
+import React from "react";
 
 const Login = (props) => {
-     const navigate = useNavigate();
+     const history = useHistory();
     let data = [{
-           uid: 1,
-            username: "sidekickad",
-            role: "admin",
-            password: "SideKick@d2022",
-            email: "admin@sidekick.com",
+        uid: 1,
+        username: "sidekickad",
+        role: "admin",
+        password: "SideKick@d2022",
+        email: "admin@sidekick.com",       
     }]
  
     const validation = useFormik({
@@ -45,11 +38,14 @@ const Login = (props) => {
     
     const handleLogin = (value, e) => {
         if (value.email !== '' && value.password !== '') {
-           const uservalid = data.filter(user => user.email === value.email && user.password === value.password)
+            const uservalid = data.filter(user => user.email === value.email &&
+                user.password === value.password)
             return new Promise((resolve, reject) => {
                 if (uservalid.length === 1) {
                     resolve([200, uservalid[0]])
-                    navigate('/')
+                    console.log(uservalid[0]);
+                    history.push('/home');
+                    localStorage.setItem('authUser', JSON.stringify(uservalid[0]));
                 } else {
                     props.setNotified({
                         completed: true,
@@ -62,9 +58,8 @@ const Login = (props) => {
        e.preventDefault();
     }
     
-
     return (
-        <React.Fragment >
+        <React.Fragment>
             <div className='container' >
                 <div className='row align-items-center' style={{height: 'calc(100vh - 40px)'}}>
                     <div className='col-4'></div>
@@ -137,8 +132,7 @@ const Login = (props) => {
                                 <button type='submit' className='btn btn-primary mx-auto my-3 d-block'>Đăng nhập</button>
                             </Form>
                         </div>
-                        </div>
-                        
+                    </div>
                     </div>
                     <div className='col-4'></div>
                 </div>

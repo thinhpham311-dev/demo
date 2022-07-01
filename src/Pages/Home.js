@@ -51,8 +51,6 @@ const Home = (props) => {
         <Polygon path={poly} ref={PolygonRef}  onClick={checkMarker} id="polygon"/>
           <Marker position={{ lat: 10.3716558, lng: 105.4323389 }}/>
       </GoogleMap>
-          
-        
     ) : (<></>);
 }
 

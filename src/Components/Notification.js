@@ -7,7 +7,7 @@ const Notification = (props) => {
         style: null
     }), 10000)
     return (
-        <div className='bottom-0 right-0' style={props.onNotified.style}>
+        <div style={{'position': 'fixed', 'bottom': 0, 'left': 0} || props.onNotified.style}>
             <div className="show toast"
                 style={props.onNotified.completed ?
                     { 'opacity': '1', 'transition': 'all 0.5s' } :

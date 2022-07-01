@@ -1,23 +1,16 @@
 
 
 import './App.css';
-
-import { Routes } from "react-router-dom";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
-import Header from './Components/Header';
-import Authmiddleware from './route/route';
-import { publicRoute, protectedRoute, isLoaded } from './route';
+import { publicRoute, protectedRoute } from './route';
+import { Switch } from 'react-router-dom';
 import React, {useState} from 'react';
 import Notification from './Components/Notification';
 import { useJsApiLoader } from '@react-google-maps/api';
+import AuthmiddlewareRoute from './route/route';
 
-
-
-
-
-
-function App(props) {
+function App() {
 
   const [Notified, setNotified] = useState({
     completed: false,
@@ -31,36 +24,34 @@ function App(props) {
   })
 
   return (
-    <div className='App'>
-      <Header/>
-      <Routes>
-        {
-          protectedRoute.map((route, index) => 
-            <Authmiddleware
-                path={route.path}
-                element={`<${route.component}/>`}
-                isLoaded= {isLoaded}
-                key={index}
-                isAuthProtected={true}
-                exact
-            />
-            )
-        }
-        {
-          publicRoute.map((route, index) => {
-            <Authmiddleware
-                path={route.path}
-                element={route.component}
-                key={index}
-                isAuthProtected={false}
-                exact
-            />
-          })
-        }
-        </Routes>
+    <React.Fragment>
+      <Switch>
+        {publicRoute.map((route, idx) => (
+          <AuthmiddlewareRoute
+            path={route.path}
+            component={route.component}
+            key={idx}
+            isAuthProtected={false}
+            exact
+            setNotified={setNotified} onNotified={Notified}
+          />
+        ))}
+
+        {protectedRoute.map((route, idx) => (
+          <AuthmiddlewareRoute
+            path={route.path}
+            component={route.component}
+            key={idx}
+            isAuthProtected={true}
+            exact
+            isLoaded={isLoaded} setNotified={setNotified} onNotified={Notified}
+          />
+        ))}
+        </Switch>
       <Notification setNotified={setNotified} onNotified={Notified}/>
-    </div>
+    </React.Fragment>
   );
 }
+
 
 export default App;

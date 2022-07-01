@@ -1,1 +1,14 @@
-
+.dropdown-menu{
+    padding: unset;
+}
+.dropdown-menu.display{
+    display: block !important;
+}
+.dropdown-toggle{
+    color:white !important;
+    background-color: black !important;
+    border: unset;
+}
+.dropdown-toggle:focus{
+    box-shadow: unset;
+}

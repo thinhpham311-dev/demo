@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from "react-router-dom";
-
+import Dropdown from './Dropdown';
 
 const Header = () => {
     return (
@@ -17,8 +17,11 @@ const Header = () => {
                             <li className="nav-item px-3">
                                 <Link to="locations" className='text-decoration-none text-white'> Location</Link>
                             </li>
+                            
                         </ul>
+                        <Dropdown/>
                     </div>
+                
                 </div>
             </nav>
         </div>

@@ -12,13 +12,10 @@ const Locations = (props) => {
   const [listlocation, setListlocation] = useState([]);
   const [listViewlocation, setListViewlocation] = useState({});
   useEffect(() => {
-    
-      api('locations', 'GET', null)
-        .then(res =>
-          setListlocation(res.data))
-        .catch(error => console.log(error))
-    
-   
+    api('locations', 'GET', null)
+      .then(res =>
+        setListlocation(res.data))
+      .catch(error => console.log(error))
   }, [setListlocation])
   
   const handleSelect = async value => {

@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useJsApiLoader } from '@react-google-maps/api';
 const API_URL = 'http://127.0.0.1:8000/api';
 export const API_KEY_GOOGLEMAP = 'AIzaSyAmlRtE1Ggrzz-iSUAWGIcm0mmi7GXbKtI';
 

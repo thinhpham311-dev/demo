@@ -8,12 +8,12 @@ import { Redirect } from 'react-router-dom';
 
 
 export const protectedRoute = [
-    { path: '/home', component: Home },
-    { path: '/locations', component: Locations },
-    { path: '*', component: PageNotFound},
+    { path: '/home', component: Home},
+    { path: '/locations', component: Locations},
     { path: '/', exact: true, component: () => <Redirect to="/home" /> },
+    {path: '*', exact: true, component: PageNotFound}
 ];
 export const publicRoute = [
     { path: '/login', component: Login },
-    { path: '/logout', component: Logout}
-]
+    { path: '/logout', component: Logout }
+];
